@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WinX OS</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d1117;
+  --surface:#161b22;
+  --surface2:#21262d;
+  --surface3:#30363d;
+  --border:#30363d;
+  --accent:#e95420;
+  --accent2:#0078d4;
+  --accent3:#77dd77;
+  --text:#e6edf3;
+  --text2:#8b949e;
+  --text3:#484f58;
+  --shadow:0 8px 32px rgba(0,0,0,0.6);
+  --radius:10px;
+  --taskbar-h:48px;
+  --topbar-h:28px;
+}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'Outfit',sans-serif;background:var(--bg);color:var(--text);user-select:none}
+
+/* ── BOOT SCREEN ── */
+#boot{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:9999;transition:opacity .8s}
+#boot.hide{opacity:0;pointer-events:none}
+.boot-logo{font-size:3rem;font-weight:700;letter-spacing:-.04em;margin-bottom:1.5rem}
+.boot-logo span:first-child{color:#e95420}
+.boot-logo span:last-child{color:#0078d4}
+.boot-bar{width:220px;height:3px;background:#1a1a1a;border-radius:99px;overflow:hidden;margin-bottom:1rem}
+.boot-fill{height:100%;width:0;background:linear-gradient(90deg,#e95420,#0078d4);border-radius:99px;transition:width .05s linear}
+.boot-txt{font-size:.75rem;color:#555;font-family:'JetBrains Mono',monospace}
+
+/* ── DESKTOP ── */
+#desktop{position:fixed;inset:0;padding-top:var(--topbar-h);padding-bottom:var(--taskbar-h);background:#0d1117;overflow:hidden}
+#wallpaper{position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse at 20% 80%,rgba(233,84,32,.15) 0%,transparent 55%),radial-gradient(ellipse at 80% 20%,rgba(0,120,212,.15) 0%,transparent 55%),radial-gradient(ellipse at 50% 50%,rgba(119,221,119,.05) 0%,transparent 70%),#0d1117}
+.grid-overlay{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.015) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
+
+/* ── TOP BAR ── */
+#topbar{position:fixed;top:0;left:0;right:0;height:var(--topbar-h);background:rgba(13,17,23,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 12px;z-index:1000;font-size:.72rem}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar-logo{font-weight:700;font-size:.8rem;letter-spacing:-.02em}
+.topbar-logo .o{color:#e95420}
+.topbar-logo .w{color:#0078d4}
+.topbar-menu{display:flex;gap:2px}
+.topbar-menu-item{padding:2px 8px;border-radius:4px;cursor:pointer;color:var(--text2);transition:.15s}
+.topbar-menu-item:hover{background:var(--surface2);color:var(--text)}
+.topbar-right{display:flex;align-items:center;gap:10px;color:var(--text2)}
+#topbar-time{font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--text)}
+.topbar-indicator{width:6px;height:6px;border-radius:50%;background:var(--accent3)}
+
+/* ── TASKBAR ── */
+#taskbar{position:fixed;bottom:0;left:0;right:0;height:var(--taskbar-h);background:rgba(13,17,23,.95);backdrop-filter:blur(24px);border-top:1px solid var(--border);display:flex;align-items:center;padding:0 8px;gap:4px;z-index:1000}
+.taskbar-start{width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,#e95420,#0078d4);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1rem;transition:.2s;flex-shrink:0}
+.taskbar-start:hover{transform:scale(1.08)}
+.taskbar-sep{width:1px;height:24px;background:var(--border);margin:0 4px;flex-shrink:0}
+.taskbar-apps{display:flex;gap:4px;flex:1}
+.taskbar-btn{height:36px;padding:0 10px;border-radius:8px;background:transparent;border:none;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:6px;font-size:.72rem;font-family:'Outfit',sans-serif;transition:.15s;white-space:nowrap}
+.taskbar-btn:hover{background:var(--surface2);color:var(--text)}
+.taskbar-btn.active{background:var(--surface3);color:var(--text)}
+.taskbar-btn .icon{font-size:1rem}
+.taskbar-tray{display:flex;align-items:center;gap:8px;margin-left:auto;padding-left:8px}
+.tray-item{color:var(--text2);font-size:.75rem;cursor:pointer;padding:4px 6px;border-radius:5px;transition:.15s}
+.tray-item:hover{background:var(--surface2);color:var(--text)}
+#taskbar-clock{font-family:'JetBrains Mono',monospace;font-size:.7rem;color:var(--text);text-align:right;line-height:1.4;padding:4px 8px}
+
+/* ── DESKTOP ICONS ── */
+.desk-icon{position:absolute;width:72px;display:flex;flex-direction:column;align-items:center;gap:4px;padding:6px;border-radius:8px;cursor:pointer;transition:.15s;z-index:1}
+.desk-icon:hover{background:rgba(255,255,255,.06)}
+.desk-icon .di-ico{font-size:2rem;line-height:1}
+.desk-icon .di-lbl{font-size:.65rem;text-align:center;color:var(--text);text-shadow:0 1px 4px rgba(0,0,0,.8);word-break:break-word;line-height:1.3}
+
+/* ── WINDOW ── */
+.window{position:absolute;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);display:flex;flex-direction:column;min-width:320px;min-height:200px;z-index:100;transition:box-shadow .2s}
+.window.focused{box-shadow:0 12px 48px rgba(0,0,0,.7),0 0 0 1px rgba(233,84,32,.3);z-index:200}
+.window.minimized{display:none}
+.window.maximized{top:var(--topbar-h)!important;left:0!important;width:100%!important;height:calc(100vh - var(--topbar-h) - var(--taskbar-h))!important;border-radius:0;border:none}
+
+.win-titlebar{height:36px;background:var(--surface2);border-radius:calc(var(--radius) - 1px) calc(var(--radius) - 1px) 0 0;display:flex;align-items:center;padding:0 10px;gap:8px;cursor:move;flex-shrink:0}
+.window.maximized .win-titlebar{border-radius:0}
+.win-icon{font-size:1rem}
+.win-title{font-size:.78rem;font-weight:500;flex:1;color:var(--text)}
+.win-controls{display:flex;gap:5px}
+.wc{width:14px;height:14px;border-radius:50%;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.55rem;transition:.15s;font-weight:700}
+.wc-min{background:#e6b800}
+.wc-max{background:#00c853}
+.wc-cls{background:#e95420}
+.wc:hover{filter:brightness(1.2)}
+
+.win-body{flex:1;overflow:hidden;border-radius:0 0 calc(var(--radius) - 1px) calc(var(--radius) - 1px);display:flex;flex-direction:column}
+.win-resize{position:absolute;right:0;bottom:0;width:16px;height:16px;cursor:se-resize;opacity:0}
+
+/* ── FILE MANAGER ── */
+.fm-toolbar{background:var(--surface2);border-bottom:1px solid var(--border);padding:6px 10px;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.fm-btn{padding:4px 10px;border-radius:5px;background:var(--surface3);border:none;color:var(--text2);font-size:.72rem;cursor:pointer;font-family:'Outfit',sans-serif;transition:.15s}
+.fm-btn:hover{background:var(--surface3);color:var(--text)}
+.fm-path{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:5px;padding:3px 8px;font-size:.72rem;color:var(--text2);font-family:'JetBrains Mono',monospace}
+.fm-layout{display:flex;flex:1;overflow:hidden}
+.fm-sidebar{width:150px;background:var(--bg);border-right:1px solid var(--border);padding:8px;overflow-y:auto;flex-shrink:0}
+.fm-sidebar-item{padding:5px 8px;border-radius:5px;font-size:.72rem;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:6px;transition:.15s}
+.fm-sidebar-item:hover,.fm-sidebar-item.active{background:var(--surface2);color:var(--text)}
+.fm-files{flex:1;padding:10px;overflow-y:auto;display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px;align-content:start}
+.fm-file{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;border-radius:6px;cursor:pointer;transition:.15s}
+.fm-file:hover{background:var(--surface2)}
+.fm-file .ff-ico{font-size:1.8rem}
+.fm-file .ff-name{font-size:.65rem;text-align:center;color:var(--text2);word-break:break-word;line-height:1.3}
+
+/* ── TERMINAL ── */
+.terminal-body{flex:1;background:#0a0c0f;padding:12px;overflow-y:auto;font-family:'JetBrains Mono',monospace;font-size:.75rem;line-height:1.6}
+.term-line{margin-bottom:2px;word-break:break-all}
+.term-prompt{color:#e95420}
+.term-dir{color:#0078d4}
+.term-cmd{color:var(--text)}
+.term-out{color:#8b949e}
+.term-err{color:#f85149}
+.term-ok{color:#77dd77}
+.term-input-row{display:flex;align-items:center;gap:4px;margin-top:4px}
+.term-input{background:transparent;border:none;outline:none;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.75rem;flex:1;caret-color:#e95420}
+
+/* ── TEXT EDITOR ── */
+.editor-toolbar{background:var(--surface2);border-bottom:1px solid var(--border);padding:5px 10px;display:flex;gap:4px;flex-wrap:wrap;flex-shrink:0}
+.ed-btn{padding:3px 8px;border-radius:4px;background:var(--surface3);border:none;color:var(--text2);font-size:.7rem;cursor:pointer;font-family:'Outfit',sans-serif;transition:.15s}
+.ed-btn:hover{background:var(--accent);color:#fff}
+.editor-area{flex:1;background:var(--bg);border:none;outline:none;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:.78rem;padding:12px;resize:none;line-height:1.7}
+
+/* ── SETTINGS ── */
+.settings-layout{display:flex;flex:1;overflow:hidden}
+.settings-nav{width:160px;background:var(--bg);border-right:1px solid var(--border);padding:8px;overflow-y:auto;flex-shrink:0}
+.settings-nav-item{padding:7px 10px;border-radius:6px;font-size:.75rem;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:8px;transition:.15s}
+.settings-nav-item:hover,.settings-nav-item.active{background:var(--surface2);color:var(--text)}
+.settings-content{flex:1;padding:20px;overflow-y:auto}
+.settings-section{margin-bottom:24px}
+.settings-section h3{font-size:.85rem;font-weight:600;margin-bottom:12px;color:var(--text);border-bottom:1px solid var(--border);padding-bottom:6px}
+.settings-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.settings-label{font-size:.75rem;color:var(--text2)}
+.toggle{width:40px;height:20px;background:var(--surface3);border-radius:99px;position:relative;cursor:pointer;transition:.2s}
+.toggle.on{background:var(--accent)}
+.toggle::after{content:'';position:absolute;width:16px;height:16px;background:#fff;border-radius:50%;top:2px;left:2px;transition:.2s}
+.toggle.on::after{left:22px}
+.settings-select{background:var(--surface2);border:1px solid var(--border);color:var(--text);padding:4px 8px;border-radius:5px;font-size:.72rem;font-family:'Outfit',sans-serif;outline:none}
+.color-swatches{display:flex;gap:6px}
+.swatch{width:20px;height:20px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:.15s}
+.swatch.active,.swatch:hover{border-color:#fff}
+
+/* ── BROWSER ── */
+.browser-toolbar{background:var(--surface2);border-bottom:1px solid var(--border);padding:6px 10px;display:flex;align-items:center;gap:6px;flex-shrink:0}
+.browser-url{flex:1;background:var(--bg);border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:.72rem;color:var(--text);font-family:'JetBrains Mono',monospace;outline:none}
+.browser-url:focus{border-color:var(--accent)}
+.browser-frame{flex:1;background:#fff;border:none;width:100%;height:100%}
+.browser-home{flex:1;background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px}
+.browser-home h2{font-size:1.5rem;font-weight:300;color:var(--text2)}
+.browser-home-search{width:100%;max-width:400px;background:var(--surface2);border:1px solid var(--border);border-radius:24px;padding:10px 16px;font-size:.85rem;color:var(--text);font-family:'Outfit',sans-serif;outline:none}
+.browser-home-search:focus{border-color:var(--accent)}
+.browser-shortcuts{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;width:100%;max-width:400px}
+.bm-item{padding:10px;background:var(--surface2);border-radius:8px;text-align:center;cursor:pointer;font-size:.7rem;color:var(--text2);transition:.15s}
+.bm-item:hover{background:var(--surface3);color:var(--text)}
+.bm-item .bm-ico{font-size:1.4rem;margin-bottom:4px}
+
+/* ── TASK MANAGER ── */
+.taskmgr-header{background:var(--surface2);padding:8px 12px;border-bottom:1px solid var(--border);font-size:.72rem;color:var(--text2);display:flex;gap:16px;flex-shrink:0}
+.taskmgr-stat{display:flex;flex-direction:column;gap:2px}
+.taskmgr-stat span:first-child{color:var(--text);font-weight:500}
+.proc-table{flex:1;overflow-y:auto}
+.proc-header{display:grid;grid-template-columns:1fr 80px 80px 70px;padding:6px 12px;background:var(--surface3);font-size:.68rem;color:var(--text2);font-weight:600;position:sticky;top:0}
+.proc-row{display:grid;grid-template-columns:1fr 80px 80px 70px;padding:6px 12px;font-size:.7rem;border-bottom:1px solid rgba(255,255,255,.03);transition:.15s;align-items:center}
+.proc-row:hover{background:var(--surface2)}
+.proc-bar{height:6px;background:var(--surface3);border-radius:3px;overflow:hidden;margin-top:3px}
+.proc-fill{height:100%;border-radius:3px;transition:width .5s}
+
+/* ── CALCULATOR ── */
+.calc-body{flex:1;padding:16px;display:flex;flex-direction:column;gap:10px}
+.calc-display{background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 16px;text-align:right}
+.calc-expr{font-size:.7rem;color:var(--text2);min-height:1em}
+.calc-val{font-size:2rem;font-weight:300;color:var(--text);font-family:'JetBrains Mono',monospace;word-break:break-all}
+.calc-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;flex:1}
+.calc-btn{border:none;border-radius:8px;font-size:.85rem;font-family:'Outfit',sans-serif;font-weight:500;cursor:pointer;transition:.15s;padding:12px}
+.calc-btn:hover{filter:brightness(1.15)}
+.cb-num{background:var(--surface2);color:var(--text)}
+.cb-op{background:var(--surface3);color:var(--accent)}
+.cb-eq{background:var(--accent);color:#fff}
+.cb-clear{background:#f85149;color:#fff}
+.cb-func{background:var(--surface3);color:var(--text2)}
+.cb-span2{grid-column:span 2}
+
+/* ── ABOUT ── */
+.about-body{flex:1;padding:24px;overflow-y:auto;display:flex;flex-direction:column;align-items:center;gap:16px;text-align:center}
+.about-logo{font-size:3rem;font-weight:700}
+.about-logo .o{color:#e95420}.about-logo .w{color:#0078d4}
+.about-version{font-size:.8rem;color:var(--text2)}
+.about-desc{font-size:.8rem;color:var(--text2);max-width:320px;line-height:1.7}
+.about-specs{background:var(--surface2);border-radius:8px;padding:12px 20px;width:100%;max-width:320px;font-size:.72rem;font-family:'JetBrains Mono',monospace;color:var(--text2);text-align:left;line-height:2}
+
+/* ── CONTEXT MENU ── */
+#ctx-menu{position:fixed;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:4px;min-width:160px;box-shadow:var(--shadow);z-index:9000;display:none}
+.ctx-item{padding:6px 12px;border-radius:5px;font-size:.75rem;cursor:pointer;transition:.15s;color:var(--text2)}
+.ctx-item:hover{background:var(--surface2);color:var(--text)}
+.ctx-sep{height:1px;background:var(--border);margin:3px 0}
+
+/* ── START MENU ── */
+#start-menu{position:fixed;bottom:calc(var(--taskbar-h) + 8px);left:8px;width:340px;background:var(--surface);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);padding:16px;z-index:5000;display:none;backdrop-filter:blur(20px)}
+.sm-search{width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:.8rem;color:var(--text);font-family:'Outfit',sans-serif;outline:none;margin-bottom:14px}
+.sm-search:focus{border-color:var(--accent)}
+.sm-section-title{font-size:.65rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.sm-apps{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px}
+.sm-app{display:flex;flex-direction:column;align-items:center;gap:4px;padding:8px;border-radius:8px;cursor:pointer;transition:.15s}
+.sm-app:hover{background:var(--surface2)}
+.sm-app .sa-ico{font-size:1.6rem}
+.sm-app .sa-lbl{font-size:.6rem;color:var(--text2);text-align:center}
+.sm-bottom{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:12px;margin-top:4px}
+.sm-user{display:flex;align-items:center;gap:8px;font-size:.75rem;color:var(--text2)}
+.sm-avatar{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#e95420,#0078d4);display:flex;align-items:center;justify-content:center;font-size:.8rem}
+.sm-actions{display:flex;gap:8px}
+.sm-action-btn{padding:5px 10px;border-radius:6px;background:var(--surface2);border:none;color:var(--text2);font-size:.7rem;cursor:pointer;font-family:'Outfit',sans-serif;transition:.15s}
+.sm-action-btn:hover{background:var(--surface3);color:var(--text)}
+
+/* ── NOTIFICATION ── */
+#notif-area{position:fixed;top:calc(var(--topbar-h) + 8px);right:12px;display:flex;flex-direction:column;gap:6px;z-index:8000;pointer-events:none}
+.notif{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:10px 14px;min-width:260px;box-shadow:var(--shadow);animation:notif-in .3s ease;pointer-events:all}
+.notif-head{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.notif-icon{font-size:1rem}
+.notif-title{font-size:.75rem;font-weight:600;flex:1}
+.notif-close{background:none;border:none;color:var(--text2);cursor:pointer;font-size:.75rem;padding:0}
+.notif-body{font-size:.7rem;color:var(--text2)}
+@keyframes notif-in{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:99px}
+::-webkit-scrollbar-thumb:hover{background:var(--text3)}
+
+/* ── LOADING SPINNER ── */
+.spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--surface3);border-top-color:var(--accent);border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+</style>
+</head>
+<body>
+
+<!-- BOOT SCREEN -->
+<div id="boot">
+  <div class="boot-logo"><span class="o">Win</span><span class="w">X</span></div>
+  <div class="boot-bar"><div class="boot-fill" id="boot-fill"></div></div>
+  <div class="boot-txt" id="boot-txt">Initializing kernel...</div>
+</div>
+
+<!-- TOP BAR -->
+<div id="topbar">
+  <div class="topbar-left">
+    <div class="topbar-logo"><span class="o">Win</span><span class="w">X</span></div>
+    <div class="topbar-menu">
+      <div class="topbar-menu-item" onclick="openApp('file-manager')">Files</div>
+      <div class="topbar-menu-item" onclick="openApp('linux-terminal')">Bash</div>
+      <div class="topbar-menu-item" onclick="openApp('win-terminal')">PowerShell</div>
+      <div class="topbar-menu-item" onclick="openApp('text-editor')">Editor</div>
+      <div class="topbar-menu-item" onclick="openApp('browser')">Browser</div>
+    </div>
+  </div>
+  <div class="topbar-right">
+    <div class="topbar-indicator"></div>
+    <div id="topbar-time"></div>
+  </div>
+</div>
+
+<!-- DESKTOP -->
+<div id="desktop">
+  <div id="wallpaper"><div class="grid-overlay"></div></div>
+  <div id="desktop-icons"></div>
+</div>
+
+<!-- TASKBAR -->
+<div id="taskbar">
+  <div class="taskbar-start" onclick="toggleStartMenu()" title="Start Menu">⊞</div>
+  <div class="taskbar-sep"></div>
+  <div class="taskbar-apps" id="taskbar-apps"></div>
+  <div class="taskbar-tray">
+    <div class="tray-item" title="Network">📶</div>
+    <div class="tray-item" title="Volume">🔊</div>
+    <div class="tray-item" title="Battery">🔋</div>
+    <div id="taskbar-clock"></div>
+  </div>
+</div>
+
+<!-- START MENU -->
+<div id="start-menu">
+  <input class="sm-search" placeholder="🔍  Search apps, files..." oninput="filterStartMenu(this.value)" id="sm-search-input">
+  <div class="sm-section-title">Pinned Apps</div>
+  <div class="sm-apps" id="sm-apps"></div>
+  <div class="sm-bottom">
+    <div class="sm-user"><div class="sm-avatar">👤</div><span>User</span></div>
+    <div class="sm-actions">
+      <button class="sm-action-btn" onclick="showNotif('System','Restarting WinX...','⚠️');closeStartMenu()">Restart</button>
+      <button class="sm-action-btn" onclick="shutDown()">Shut Down</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONTEXT MENU -->
+<div id="ctx-menu">
+  <div class="ctx-item" onclick="showNotif('Desktop','Refreshing desktop...','🔄');closeCtx()">🔄 Refresh</div>
+  <div class="ctx-item" onclick="openApp('settings');closeCtx()">⚙️ Display Settings</div>
+  <div class="ctx-sep"></div>
+  <div class="ctx-item" onclick="openApp('text-editor');closeCtx()">📝 New Text File</div>
+  <div class="ctx-item" onclick="openApp('linux-terminal');closeCtx()">🐧 Open Bash Here</div>
+  <div class="ctx-item" onclick="openApp('win-terminal');closeCtx()">🟦 Open PowerShell Here</div>
+</div>
+
+<!-- NOTIFICATION AREA -->
+<div id="notif-area"></div>
+
+<script>
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+let windowZ = 200;
+let windows = {};
+let taskbarBtns = {};
+let calcState = {val:'0', expr:'', op:null, prev:null, fresh:true};
+
+// ── Linux Terminal State ──
+let termHistory = [];
+let termHistIdx = -1;
+let termCwd = '/home/user';
+
+// ── Windows Terminal State ──
+let psHistory = [];
+let psHistIdx = -1;
+let psCwd = 'C:\\Users\\User';
+
+const FS = {
+  '/': {type:'dir', children:['home','etc','usr','bin','tmp']},
+  '/home': {type:'dir', children:['user']},
+  '/home/user': {type:'dir', children:['Documents','Downloads','Pictures','Desktop']},
+  '/home/user/Documents': {type:'dir', children:['readme.txt','notes.md','report.docx']},
+  '/home/user/Downloads': {type:'dir', children:['archive.zip','installer.exe']},
+  '/home/user/Pictures': {type:'dir', children:['wallpaper.png','screenshot.jpg']},
+  '/home/user/Desktop': {type:'dir', children:[]},
+  '/etc': {type:'dir', children:['hosts','fstab','passwd']},
+  '/usr': {type:'dir', children:['bin','lib']},
+  '/bin': {type:'dir', children:['ls','cat','rm','mkdir']},
+  '/tmp': {type:'dir', children:[]},
+  '/home/user/Documents/readme.txt': {type:'file', content:'Welcome to WinX OS!\n\nThis is a hybrid Ubuntu/Windows web OS.\nBuilt with pure HTML, CSS & JS.'},
+  '/home/user/Documents/notes.md': {type:'file', content:'# My Notes\n\n- Buy groceries\n- Learn WinX terminal\n- Deploy to web'},
+};
+
+const APPS = [
+  {id:'file-manager',   label:'Files',          icon:'📁'},
+  {id:'linux-terminal', label:'Bash Terminal',   icon:'🐧'},
+  {id:'win-terminal',   label:'PowerShell',      icon:'🟦'},
+  {id:'text-editor',    label:'Editor',          icon:'📝'},
+  {id:'browser',        label:'Browser',         icon:'🌐'},
+  {id:'settings',       label:'Settings',        icon:'⚙️'},
+  {id:'calculator',     label:'Calculator',      icon:'🧮'},
+  {id:'task-manager',   label:'Task Manager',    icon:'📊'},
+  {id:'about',          label:'About WinX',      icon:'ℹ️'},
+];
+
+// ══════════════════════════════════════════
+//  BOOT
+// ══════════════════════════════════════════
+const bootMsgs = [
+  'Initializing kernel...','Loading drivers...','Mounting filesystems...',
+  'Starting network services...','Loading user session...','Almost ready...'
+];
+let bootStep = 0;
+function bootTick(){
+  const fill = document.getElementById('boot-fill');
+  const txt = document.getElementById('boot-txt');
+  const pct = (bootStep+1)/bootMsgs.length*100;
+  fill.style.width = pct+'%';
+  txt.textContent = bootMsgs[bootStep];
+  bootStep++;
+  if(bootStep < bootMsgs.length) setTimeout(bootTick, 380);
+  else setTimeout(()=>{
+    document.getElementById('boot').classList.add('hide');
+    initDesktop();
+    showNotif('WinX OS','Welcome back, User 👋','🎉');
+  }, 600);
+}
+setTimeout(bootTick, 300);
+
+// ══════════════════════════════════════════
+//  CLOCK
+// ══════════════════════════════════════════
+function updateClock(){
+  const now = new Date();
+  const pad = n=>String(n).padStart(2,'0');
+  const t = `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  const d = now.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  document.getElementById('topbar-time').textContent = t;
+  document.getElementById('taskbar-clock').innerHTML = `${t}<br><span style="font-size:.62rem;color:var(--text2)">${d}</span>`;
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+// ══════════════════════════════════════════
+//  DESKTOP ICONS
+// ══════════════════════════════════════════
+function initDesktop(){
+  const container = document.getElementById('desktop-icons');
+  const positions = [
+    [16,40],[16,140],[16,240],[16,340],[16,440],
+    [108,40],[108,140],[108,240],[108,340]
+  ];
+  APPS.forEach((app,i)=>{
+    const pos = positions[i] || [16 + Math.floor(i/6)*92, 40 + (i%6)*100];
+    const el = document.createElement('div');
+    el.className = 'desk-icon';
+    el.style.cssText = `left:${pos[0]}px;top:${pos[1]}px`;
+    el.innerHTML = `<div class="di-ico">${app.icon}</div><div class="di-lbl">${app.label}</div>`;
+    el.ondblclick = ()=>openApp(app.id);
+    el.addEventListener('mousedown', e=>{ e.stopPropagation(); });
+    makeDraggable(el, null, true);
+    container.appendChild(el);
+  });
+  initStartMenuApps();
+}
+
+function initStartMenuApps(){
+  const c = document.getElementById('sm-apps');
+  c.innerHTML = '';
+  APPS.forEach(app=>{
+    const el = document.createElement('div');
+    el.className='sm-app';
+    el.dataset.label = app.label.toLowerCase();
+    el.innerHTML=`<div class="sa-ico">${app.icon}</div><div class="sa-lbl">${app.label}</div>`;
+    el.onclick=()=>{openApp(app.id);closeStartMenu()};
+    c.appendChild(el);
+  });
+}
+
+function filterStartMenu(q){
+  document.querySelectorAll('.sm-app').forEach(el=>{
+    el.style.display = el.dataset.label.includes(q.toLowerCase()) ? '' : 'none';
+  });
+}
+
+// ══════════════════════════════════════════
+//  START MENU
+// ══════════════════════════════════════════
+function toggleStartMenu(){
+  const m = document.getElementById('start-menu');
+  m.style.display = m.style.display==='block' ? 'none' : 'block';
+  if(m.style.display==='block') document.getElementById('sm-search-input').focus();
+}
+function closeStartMenu(){ document.getElementById('start-menu').style.display='none'; }
+
+// ══════════════════════════════════════════
+//  CONTEXT MENU
+// ══════════════════════════════════════════
+document.getElementById('desktop').addEventListener('contextmenu',e=>{
+  e.preventDefault();
+  const m = document.getElementById('ctx-menu');
+  m.style.display='block';
+  m.style.left = Math.min(e.clientX, window.innerWidth-170)+'px';
+  m.style.top = Math.min(e.clientY, window.innerHeight-160)+'px';
+});
+function closeCtx(){ document.getElementById('ctx-menu').style.display='none'; }
+document.addEventListener('click', e=>{
+  closeCtx();
+  if(!document.getElementById('start-menu').contains(e.target) &&
+     !e.target.closest('.taskbar-start')) closeStartMenu();
+});
+
+// ══════════════════════════════════════════
+//  NOTIFICATIONS
+// ══════════════════════════════════════════
+function showNotif(title, body, icon='🔔'){
+  const area = document.getElementById('notif-area');
+  const el = document.createElement('div');
+  el.className='notif';
+  el.innerHTML=`<div class="notif-head"><span class="notif-icon">${icon}</span><span class="notif-title">${title}</span><button class="notif-close" onclick="this.closest('.notif').remove()">✕</button></div><div class="notif-body">${body}</div>`;
+  area.appendChild(el);
+  setTimeout(()=>el.remove(), 4000);
+}
+
+// ══════════════════════════════════════════
+//  WINDOW MANAGER
+// ══════════════════════════════════════════
+function openApp(id){
+  if(windows[id]){
+    const w = document.getElementById('win-'+id);
+    if(!w) return;
+    w.classList.remove('minimized');
+    focusWindow(id);
+    updateTaskbar(id, false);
+    return;
+  }
+  createWindow(id);
+}
+
+function createWindow(id){
+  const app = APPS.find(a=>a.id===id);
+  if(!app) return;
+
+  const sizes = {
+    'file-manager':[680,460],'linux-terminal':[560,380],'win-terminal':[580,400],
+    'text-editor':[560,420],'browser':[720,480],'settings':[580,420],
+    'calculator':[280,420],'task-manager':[540,380],'about':[360,340]
+  };
+  const [w,h] = sizes[id]||[500,380];
+  const x = 60 + Object.keys(windows).length*28;
+  const y = 48 + Object.keys(windows).length*28;
+
+  const win = document.createElement('div');
+  win.className='window';
+  win.id='win-'+id;
+  win.style.cssText=`width:${w}px;height:${h}px;left:${Math.min(x,window.innerWidth-w-20)}px;top:${Math.min(y,window.innerHeight-h-60)}px`;
+  win.innerHTML=`
+    <div class="win-titlebar" id="titlebar-${id}">
+      <span class="win-icon">${app.icon}</span>
+      <span class="win-title">${app.label}</span>
+      <div class="win-controls">
+        <button class="wc wc-min" onclick="minimizeWin('${id}')" title="Minimize"></button>
+        <button class="wc wc-max" onclick="maximizeWin('${id}')" title="Maximize"></button>
+        <button class="wc wc-cls" onclick="closeWin('${id}')" title="Close"></button>
+      </div>
+    </div>
+    <div class="win-body" id="winbody-${id}">${buildApp(id)}</div>
+    <div class="win-resize" id="resize-${id}"></div>
+  `;
+
+  document.getElementById('desktop').appendChild(win);
+  windows[id] = {minimized:false, maximized:false};
+  focusWindow(id);
+  makeDraggable(win, document.getElementById('titlebar-'+id));
+  makeResizable(win, document.getElementById('resize-'+id));
+  addTaskbarBtn(id, app);
+  win.addEventListener('mousedown',()=>focusWindow(id));
+  initAppLogic(id);
+}
+
+function focusWindow(id){
+  Object.keys(windows).forEach(k=>{
+    const w = document.getElementById('win-'+k);
+    if(w) w.classList.remove('focused');
+    if(taskbarBtns[k]) taskbarBtns[k].classList.remove('active');
+  });
+  const w = document.getElementById('win-'+id);
+  if(w){ w.style.zIndex = ++windowZ; w.classList.add('focused'); }
+  if(taskbarBtns[id]) taskbarBtns[id].classList.add('active');
+}
+
+function minimizeWin(id){
+  const w = document.getElementById('win-'+id);
+  if(!w) return;
+  w.classList.toggle('minimized');
+  updateTaskbar(id, w.classList.contains('minimized'));
+}
+
+function maximizeWin(id){
+  const w = document.getElementById('win-'+id);
+  if(!w) return;
+  if(!windows[id].maximized){
+    windows[id]._restore={left:w.style.left,top:w.style.top,width:w.style.width,height:w.style.height};
+    w.classList.add('maximized');
+    windows[id].maximized=true;
+  } else {
+    const r=windows[id]._restore;
+    w.classList.remove('maximized');
+    Object.assign(w.style,r);
+    windows[id].maximized=false;
+  }
+}
+
+function closeWin(id){
+  const w = document.getElementById('win-'+id);
+  if(w) w.remove();
+  delete windows[id];
+  if(taskbarBtns[id]){ taskbarBtns[id].remove(); delete taskbarBtns[id]; }
+}
+
+function updateTaskbar(id, minimized){
+  if(!taskbarBtns[id]) return;
+  taskbarBtns[id].classList.toggle('active', !minimized);
+}
+
+function addTaskbarBtn(id, app){
+  const btn = document.createElement('button');
+  btn.className='taskbar-btn active';
+  btn.innerHTML=`<span class="icon">${app.icon}</span>${app.label}`;
+  btn.onclick=()=>{ minimizeWin(id); focusWindow(id); };
+  document.getElementById('taskbar-apps').appendChild(btn);
+  taskbarBtns[id]=btn;
+}
+
+// ── DRAG ──
+function makeDraggable(el, handle, freeMove=false){
+  const h = handle || el;
+  let sx,sy,ex,ey;
+  h.addEventListener('mousedown', e=>{
+    if(e.button!==0) return;
+    if(e.target.closest('.wc')) return;
+    sx=e.clientX; sy=e.clientY;
+    ex=el.offsetLeft; ey=el.offsetTop;
+    document.addEventListener('mousemove', drag);
+    document.addEventListener('mouseup', ()=>document.removeEventListener('mousemove',drag),{once:true});
+    e.preventDefault();
+  });
+  function drag(e){
+    const dx=e.clientX-sx, dy=e.clientY-sy;
+    el.style.left=(ex+dx)+'px';
+    el.style.top=Math.max(freeMove?0:28,ey+dy)+'px';
+  }
+}
+
+// ── RESIZE ──
+function makeResizable(win, handle){
+  let sx,sy,sw,sh;
+  handle.addEventListener('mousedown',e=>{
+    sx=e.clientX;sy=e.clientY;sw=win.offsetWidth;sh=win.offsetHeight;
+    document.addEventListener('mousemove',doResize);
+    document.addEventListener('mouseup',()=>document.removeEventListener('mousemove',doResize),{once:true});
+    e.preventDefault();
+  });
+  function doResize(e){
+    win.style.width=Math.max(280,sw+(e.clientX-sx))+'px';
+    win.style.height=Math.max(180,sh+(e.clientY-sy))+'px';
+  }
+}
+
+// ══════════════════════════════════════════
+//  APP BUILDERS
+// ══════════════════════════════════════════
+function buildApp(id){
+  switch(id){
+    case 'file-manager':   return buildFileManager();
+    case 'linux-terminal': return buildLinuxTerminal();
+    case 'win-terminal':   return buildWinTerminal();
+    case 'text-editor':    return buildTextEditor();
+    case 'browser':        return buildBrowser();
+    case 'settings':       return buildSettings();
+    case 'calculator':     return buildCalculator();
+    case 'task-manager':   return buildTaskManager();
+    case 'about':          return buildAbout();
+    default: return '<div style="padding:20px;color:var(--text2)">App not found.</div>';
+  }
+}
+
+// ── FILE MANAGER ──
+function buildFileManager(){
+  return `
+  <div class="fm-toolbar">
+    <button class="fm-btn" onclick="fmBack()">◀</button>
+    <button class="fm-btn" onclick="fmForward()">▶</button>
+    <button class="fm-btn" onclick="fmUp()">↑</button>
+    <input class="fm-path" id="fm-path" value="/home/user" onkeydown="if(event.key==='Enter')fmNav(this.value)">
+    <button class="fm-btn" onclick="fmRefresh()">↻</button>
+  </div>
+  <div class="fm-layout">
+    <div class="fm-sidebar">
+      <div class="fm-sidebar-item active" onclick="fmGo('/home/user')">🏠 Home</div>
+      <div class="fm-sidebar-item" onclick="fmGo('/home/user/Documents')">📄 Documents</div>
+      <div class="fm-sidebar-item" onclick="fmGo('/home/user/Downloads')">⬇️ Downloads</div>
+      <div class="fm-sidebar-item" onclick="fmGo('/home/user/Pictures')">🖼️ Pictures</div>
+      <div class="fm-sidebar-item" onclick="fmGo('/')">💾 Root</div>
+      <div class="fm-sidebar-item" onclick="fmGo('/etc')">/etc</div>
+      <div class="fm-sidebar-item" onclick="fmGo('/tmp')">/tmp</div>
+    </div>
+    <div class="fm-files" id="fm-files"></div>
+  </div>`;
+}
+
+let fmCwd = '/home/user';
+let fmStack = ['/home/user'];
+let fmIdx = 0;
+
+function initAppLogic(id){
+  if(id==='file-manager') fmRender(fmCwd);
+  if(id==='task-manager') tmInit();
+  if(id==='calculator') calcRender();
+}
+
+function fmRender(path){
+  const node = FS[path];
+  if(!node||node.type!=='dir') return;
+  fmCwd=path;
+  document.getElementById('fm-path').value=path;
+  const container=document.getElementById('fm-files');
+  if(!container) return;
+  container.innerHTML='';
+  if(path!=='/'){
+    const up=document.createElement('div');
+    up.className='fm-file';
+    up.innerHTML=`<div class="ff-ico">📁</div><div class="ff-name">..</div>`;
+    up.ondblclick=()=>fmUp();
+    container.appendChild(up);
+  }
+  (node.children||[]).forEach(name=>{
+    const childPath=path.replace(/\/$/,'')+'/'+name;
+    const child=FS[childPath];
+    const isDir=child&&child.type==='dir';
+    const ico=isDir?'📁':getFileIcon(name);
+    const el=document.createElement('div');
+    el.className='fm-file';
+    el.innerHTML=`<div class="ff-ico">${ico}</div><div class="ff-name">${name}</div>`;
+    if(isDir) el.ondblclick=()=>fmGo(childPath);
+    else el.ondblclick=()=>openFileInEditor(childPath,name,child);
+    container.appendChild(el);
+  });
+}
+function getFileIcon(name){
+  const ext=name.split('.').pop();
+  const map={txt:'📄',md:'📝',docx:'📃',zip:'🗜️',exe:'⚙️',png:'🖼️',jpg:'🖼️',mp3:'🎵',mp4:'🎬'};
+  return map[ext]||'📄';
+}
+function fmGo(path){ fmStack.splice(fmIdx+1); fmStack.push(path); fmIdx=fmStack.length-1; fmRender(path); }
+function fmBack(){ if(fmIdx>0){ fmIdx--; fmRender(fmStack[fmIdx]); } }
+function fmForward(){ if(fmIdx<fmStack.length-1){ fmIdx++; fmRender(fmStack[fmIdx]); } }
+function fmUp(){ const p=fmCwd.split('/').slice(0,-1).join('/')||'/'; fmGo(p); }
+function fmNav(v){ fmGo(v); }
+function fmRefresh(){ fmRender(fmCwd); }
+function openFileInEditor(path,name,node){
+  openApp('text-editor');
+  setTimeout(()=>{
+    const ta=document.querySelector('#winbody-text-editor textarea');
+    if(ta&&node) ta.value=node.content||'';
+    const title=document.querySelector('#win-text-editor .win-title');
+    if(title) title.textContent=name;
+  },100);
+}
+
+// ═══════════════════════════════════════════
+//  🐧 LINUX / BASH TERMINAL
+// ═══════════════════════════════════════════
+function buildLinuxTerminal(){
+  return `
+  <div style="display:flex;flex-direction:column;height:100%;background:#0d1117">
+    <div style="background:#161b22;border-bottom:1px solid #30363d;padding:5px 10px;display:flex;align-items:center;gap:8px;flex-shrink:0">
+      <span style="font-size:.65rem;color:#77dd77;font-family:'JetBrains Mono',monospace">🐧 bash — user@winx</span>
+      <span style="margin-left:auto;font-size:.6rem;color:#484f58">WinX Bash 5.2.15</span>
+    </div>
+    <div class="terminal-body" id="lterm-body" onclick="document.getElementById('lterm-input').focus()" style="flex:1;overflow-y:auto">
+      <div class="term-line" style="color:#77dd77;margin-bottom:4px">
+        ██████╗  █████╗ ███████╗██╗  ██╗<br>
+        ██╔══██╗██╔══██╗██╔════╝██║  ██║<br>
+        ██████╔╝███████║███████╗███████║<br>
+        ██╔══██╗██╔══██║╚════██║██╔══██║<br>
+        ██████╔╝██║  ██║███████║██║  ██║<br>
+        ╚═════╝ ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝
+      </div>
+      <div class="term-line term-out">WinX Bash Terminal — Ubuntu layer active</div>
+      <div class="term-line term-out">Type <span style="color:#77dd77">help</span> for available commands.</div>
+      <div id="lterm-output"></div>
+      <div class="term-input-row" style="margin-top:6px">
+        <span style="color:#77dd77;font-family:'JetBrains Mono',monospace;font-size:.75rem;white-space:nowrap">
+          <span style="color:#e95420">user</span><span style="color:#fff">@</span><span style="color:#0078d4">winx</span><span style="color:#fff">:</span><span id="lterm-cwd" style="color:#77dd77">${termCwd}</span><span style="color:#fff">$&nbsp;</span>
+        </span>
+        <input class="term-input" id="lterm-input" autocomplete="off" autocorrect="off" spellcheck="false" onkeydown="ltermKey(event)">
+      </div>
+    </div>
+  </div>`;
+}
+
+function ltermKey(e){
+  if(e.key==='Enter'){
+    const inp=document.getElementById('lterm-input');
+    const cmd=inp.value.trim(); inp.value='';
+    if(cmd){ termHistory.unshift(cmd); termHistIdx=-1; }
+    ltermExec(cmd);
+  } else if(e.key==='ArrowUp'){
+    termHistIdx=Math.min(termHistIdx+1,termHistory.length-1);
+    document.getElementById('lterm-input').value=termHistory[termHistIdx]||'';
+    e.preventDefault();
+  } else if(e.key==='ArrowDown'){
+    termHistIdx=Math.max(termHistIdx-1,-1);
+    document.getElementById('lterm-input').value=termHistIdx>=0?termHistory[termHistIdx]:'';
+    e.preventDefault();
+  }
+}
+
+function ltermPrint(html){
+  const out=document.getElementById('lterm-output'); if(!out) return;
+  out.innerHTML+=html;
+  const body=document.getElementById('lterm-body'); if(body) body.scrollTop=9999;
+}
+function ltermPromptLine(cmd){
+  return `<div class="term-line"><span style="color:#e95420">user</span><span style="color:#fff">@</span><span style="color:#0078d4">winx</span><span style="color:#fff">:</span><span style="color:#77dd77">${termCwd}</span><span style="color:#fff">$&nbsp;</span><span class="term-cmd">${escHtml(cmd)}</span></div>`;
+}
+function lOut(t){ return `<div class="term-line term-out">${t}</div>`; }
+function lErr(t){ return `<div class="term-line term-err">${t}</div>`; }
+function lOk(t){ return `<div class="term-line term-ok">${t}</div>`; }
+function escHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function ltermExec(cmd){
+  ltermPrint(ltermPromptLine(cmd||''));
+  if(!cmd) return;
+  const parts=cmd.trim().split(/\s+/);
+  const c=parts[0]; const args=parts.slice(1);
+  switch(c){
+    case 'help':
+      ltermPrint(lOut(`<span style="color:#77dd77;font-weight:600">Available commands:</span><br>
+  <span style="color:#e95420">Navigation:</span>  ls, cd, pwd<br>
+  <span style="color:#e95420">Files:</span>       cat, touch, mkdir, rm, cp, mv<br>
+  <span style="color:#e95420">System:</span>      whoami, uname, date, uptime, df, free, ps<br>
+  <span style="color:#e95420">Utils:</span>       echo, clear, history, grep, neofetch<br>
+  <span style="color:#e95420">WinX:</span>        open &lt;appname&gt;`));
+      break;
+    case 'ls': case 'ls -la': case 'ls -l': case 'ls -a':{
+      const target=args[0]?lResolvePath(args[0]):termCwd;
+      const node=FS[target];
+      if(!node||node.type!=='dir'){ ltermPrint(lErr(`ls: cannot access '${escHtml(target)}': No such file or directory`)); break; }
+      const long=cmd.includes('-l')||cmd.includes('-la');
+      const all=cmd.includes('-a')||cmd.includes('-la');
+      let out='';
+      if(all) out+=lOut('<span style="color:#77dd77">drwxr-xr-x</span>  user user  &nbsp; <span style="color:#0078d4">.</span>') + lOut('<span style="color:#77dd77">drwxr-xr-x</span>  user user  &nbsp; <span style="color:#0078d4">..</span>');
+      (node.children||[]).forEach(name=>{
+        const cp=target.replace(/\/$/,'')+'/'+name;
+        const ch=FS[cp];
+        const isDir=ch&&ch.type==='dir';
+        if(long){
+          const perm=isDir?'<span style="color:#77dd77">drwxr-xr-x</span>':'<span style="color:#8b949e">-rw-r--r--</span>';
+          const size=isDir?'&nbsp;&nbsp;&nbsp;-':String((ch?.content?.length||0)+'B').padStart(5);
+          out+=lOut(`${perm}  user user ${size}  <span style="color:${isDir?'#0078d4':'var(--text)'}">${name}${isDir?'/':''}</span>`);
+        } else {
+          out+=`<span style="color:${isDir?'#0078d4':'var(--text)'}; margin-right:16px">${name}${isDir?'/':''}</span>`;
+        }
+      });
+      ltermPrint(long ? out : `<div class="term-line term-out">${out||'(empty)'}</div>`);
+      break;
+    }
+    case 'cd':{
+      const to=args[0]?lResolvePath(args[0]):'/home/user';
+      if(FS[to]&&FS[to].type==='dir'){
+        termCwd=to;
+        const el=document.getElementById('lterm-cwd'); if(el) el.textContent=termCwd;
+      } else ltermPrint(lErr(`bash: cd: ${escHtml(args[0]||'')}: No such file or directory`));
+      break;
+    }
+    case 'pwd': ltermPrint(lOut(termCwd)); break;
+    case 'cat':{
+      if(!args[0]){ ltermPrint(lErr('cat: missing file operand')); break; }
+      const t=lResolvePath(args[0]); const n=FS[t];
+      if(!n) { ltermPrint(lErr(`cat: ${escHtml(args[0])}: No such file or directory`)); break; }
+      if(n.type==='dir'){ ltermPrint(lErr(`cat: ${escHtml(args[0])}: Is a directory`)); break; }
+      ltermPrint(lOut(escHtml(n.content||'').replace(/\n/g,'<br>')));
+      break;
+    }
+    case 'touch':{
+      if(!args[0]){ ltermPrint(lErr('touch: missing file operand')); break; }
+      const t=lResolvePath(args[0]); const par=t.split('/').slice(0,-1).join('/')||'/'; const nm=t.split('/').pop();
+      if(!FS[t]){ FS[par]&&FS[par].children.push(nm); FS[t]={type:'file',content:''}; }
+      break;
+    }
+    case 'mkdir':{
+      if(!args[0]){ ltermPrint(lErr('mkdir: missing operand')); break; }
+      const t=lResolvePath(args[0]); const par=t.split('/').slice(0,-1).join('/')||'/'; const nm=t.split('/').pop();
+      if(FS[t]){ ltermPrint(lErr(`mkdir: cannot create directory '${escHtml(args[0])}': File exists`)); break; }
+      if(!FS[par]){ ltermPrint(lErr(`mkdir: cannot create directory '${escHtml(args[0])}': No such file or directory`)); break; }
+      FS[par].children.push(nm); FS[t]={type:'dir',children:[]}; ltermPrint(lOk(`Created: ${t}`));
+      break;
+    }
+    case 'rm':{
+      if(!args[0]){ ltermPrint(lErr('rm: missing operand')); break; }
+      const t=lResolvePath(args[0]);
+      if(!FS[t]){ ltermPrint(lErr(`rm: cannot remove '${escHtml(args[0])}': No such file or directory`)); break; }
+      const par=t.split('/').slice(0,-1).join('/')||'/'; const nm=t.split('/').pop();
+      if(FS[par]) FS[par].children=FS[par].children.filter(n=>n!==nm);
+      delete FS[t]; ltermPrint(lOk(`Removed: ${t}`));
+      break;
+    }
+    case 'cp':{
+      if(args.length<2){ ltermPrint(lErr('cp: missing destination operand')); break; }
+      const src=lResolvePath(args[0]); const dst=lResolvePath(args[1]);
+      if(!FS[src]){ ltermPrint(lErr(`cp: '${escHtml(args[0])}': No such file or directory`)); break; }
+      const par=dst.split('/').slice(0,-1).join('/')||'/'; const nm=dst.split('/').pop();
+      FS[dst]={...FS[src]}; if(FS[par]) FS[par].children.push(nm);
+      ltermPrint(lOk(`Copied: ${src} → ${dst}`)); break;
+    }
+    case 'mv':{
+      if(args.length<2){ ltermPrint(lErr('mv: missing destination operand')); break; }
+      const src=lResolvePath(args[0]); const dst=lResolvePath(args[1]);
+      if(!FS[src]){ ltermPrint(lErr(`mv: '${escHtml(args[0])}': No such file or directory`)); break; }
+      const srcPar=src.split('/').slice(0,-1).join('/')||'/'; const srcNm=src.split('/').pop();
+      const dstPar=dst.split('/').slice(0,-1).join('/')||'/'; const dstNm=dst.split('/').pop();
+      FS[dst]={...FS[src]}; delete FS[src];
+      if(FS[srcPar]) FS[srcPar].children=FS[srcPar].children.filter(n=>n!==srcNm);
+      if(FS[dstPar]) FS[dstPar].children.push(dstNm);
+      ltermPrint(lOk(`Moved: ${src} → ${dst}`)); break;
+    }
+    case 'echo': ltermPrint(lOut(escHtml(args.join(' ')))); break;
+    case 'clear': document.getElementById('lterm-output').innerHTML=''; break;
+    case 'history':
+      if(!termHistory.length){ ltermPrint(lOut('(no history)')); break; }
+      ltermPrint(lOut(termHistory.map((h,i)=>`${String(i+1).padStart(3,'&nbsp;')}  ${escHtml(h)}`).join('<br>')));
+      break;
+    case 'whoami': ltermPrint(lOut('user')); break;
+    case 'id': ltermPrint(lOut('uid=1000(user) gid=1000(user) groups=1000(user),4(adm),27(sudo)')); break;
+    case 'uname': ltermPrint(lOut(args.includes('-a')?'Linux winx 6.8.0-winx-hybrid #1 SMP x86_64 GNU/Linux':'Linux')); break;
+    case 'date': ltermPrint(lOut(new Date().toString())); break;
+    case 'uptime': ltermPrint(lOut(' 14:32:01 up 2:34,  1 user,  load average: 0.12, 0.08, 0.04')); break;
+    case 'df':
+      ltermPrint(lOut(`Filesystem      Size  Used Avail Use% Mounted on<br>
+/dev/sda1        50G  8.2G   42G  17% /<br>
+tmpfs           7.8G     0  7.8G   0% /dev/shm`));
+      break;
+    case 'free':
+      ltermPrint(lOut(`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;total    &nbsp;&nbsp;&nbsp;used    &nbsp;&nbsp;&nbsp;free  &nbsp;&nbsp;shared  buff/cache<br>
+Mem:        16384     2048    12288      256      2048<br>
+Swap:        8192        0     8192`));
+      break;
+    case 'ps': case 'ps aux':
+      ltermPrint(lOut(`USER   PID  %CPU %MEM COMMAND<br>
+user     1   0.2  0.1 winx-session<br>
+user    42   1.1  0.5 desktop-env<br>
+user   101   3.4  1.3 winx-browser<br>
+user   203   0.5  0.3 bash`));
+      break;
+    case 'grep':{
+      if(args.length<2){ ltermPrint(lErr('grep: usage: grep PATTERN FILE')); break; }
+      const pat=args[0]; const file=lResolvePath(args[1]); const n=FS[file];
+      if(!n){ ltermPrint(lErr(`grep: ${escHtml(args[1])}: No such file or directory`)); break; }
+      const lines=(n.content||'').split('\n').filter(l=>l.includes(pat));
+      ltermPrint(lines.length ? lOut(lines.map(l=>escHtml(l).replace(new RegExp(escHtml(pat),'g'),`<span style="color:#e95420;font-weight:600">${escHtml(pat)}</span>`)).join('<br>')) : lOut('(no matches)'));
+      break;
+    }
+    case 'neofetch':
+      ltermPrint(`<div class="term-line" style="display:grid;grid-template-columns:auto 1fr;gap:20px;margin:8px 0;align-items:start">
+        <div style="color:#e95420;font-family:'JetBrains Mono',monospace;line-height:1.6;font-size:.7rem;white-space:pre">
+ <span style="color:#e95420">   _</span><span style="color:#fff">_</span>
+ <span style="color:#e95420"> _</span>/ /<span style="color:#e95420">_</span>
+<span style="color:#e95420">(_</span><span style="color:#fff"> __ </span><span style="color:#e95420">_)</span>
+ <span style="color:#e95420">/ /</span><span style="color:#fff">/ /</span>
+<span style="color:#e95420">/_</span><span style="color:#fff">//_/</span>
+<span style="color:#0078d4">WinX</span></div>
+        <div style="font-size:.72rem;line-height:2;font-family:'JetBrains Mono',monospace">
+<span style="color:#e95420">user</span><span style="color:#fff">@</span><span style="color:#0078d4">winx</span><br>
+<span style="color:#77dd77">OS:</span> WinX 1.0.0 (Ubuntu layer)<br>
+<span style="color:#77dd77">Kernel:</span> 6.8.0-winx-hybrid<br>
+<span style="color:#77dd77">Shell:</span> bash 5.2.15<br>
+<span style="color:#77dd77">DE:</span> WinX Desktop<br>
+<span style="color:#77dd77">Terminal:</span> winx-bash<br>
+<span style="color:#77dd77">CPU:</span> Web Browser Engine<br>
+<span style="color:#77dd77">Memory:</span> 2048MiB / 16384MiB<br>
+<span style="color:#77dd77">Uptime:</span> 2 hours, 34 mins
+        </div></div>`);
+      break;
+    case 'open':{
+      const a=APPS.find(x=>x.id===args[0]||x.label.toLowerCase()===args.join(' ').toLowerCase());
+      if(a){ openApp(a.id); ltermPrint(lOk(`Opening ${a.label}...`)); }
+      else ltermPrint(lErr(`open: '${escHtml(args[0]||'')}': Application not found`));
+      break;
+    }
+    case 'sudo': ltermPrint(lErr(`[sudo] password for user: <br><span style="color:#e6b800">Sorry, try again. (Just kidding — sudo disabled in web mode)</span>`)); break;
+    case 'apt': ltermPrint(lOut(`<span style="color:#0078d4">Reading package lists...</span> Done<br><span style="color:#77dd77">Note:</span> apt is simulated in WinX web mode.`)); break;
+    case 'man': ltermPrint(lOut(args[0]?`<span style="color:#e6b800">man: ${escHtml(args[0])}: manual page exists but rendering is not supported in web mode.</span>`:'What manual page do you want?')); break;
+    default:
+      ltermPrint(lErr(`bash: ${escHtml(c)}: command not found<br><span style="color:#484f58">Did you mean something else? Type <span style="color:#77dd77">help</span></span>`));
+  }
+}
+
+function lResolvePath(p){
+  if(p.startsWith('/')) return p;
+  if(p==='~') return '/home/user';
+  if(p.startsWith('~/')) return '/home/user'+p.slice(1);
+  if(p==='..') return termCwd.split('/').slice(0,-1).join('/')||'/';
+  if(p==='.') return termCwd;
+  return (termCwd==='/'?'':termCwd)+'/'+p;
+}
+
+// ═══════════════════════════════════════════
+//  🟦 WINDOWS POWERSHELL TERMINAL
+// ═══════════════════════════════════════════
+
+// Windows virtual FS (C:\ style)
+const WFS = {
+  'C:':                        {type:'dir', children:['Users','Windows','Program Files','Temp']},
+  'C:\\Users':                  {type:'dir', children:['User']},
+  'C:\\Users\\User':             {type:'dir', children:['Desktop','Documents','Downloads','Pictures']},
+  'C:\\Users\\User\\Desktop':    {type:'dir', children:[]},
+  'C:\\Users\\User\\Documents':  {type:'dir', children:['readme.txt','notes.txt','report.docx']},
+  'C:\\Users\\User\\Downloads':  {type:'dir', children:['setup.exe','archive.zip']},
+  'C:\\Users\\User\\Pictures':   {type:'dir', children:['photo.jpg','wallpaper.png']},
+  'C:\\Windows':                 {type:'dir', children:['System32','SysWOW64','Temp']},
+  'C:\\Windows\\System32':       {type:'dir', children:['cmd.exe','notepad.exe','calc.exe']},
+  'C:\\Program Files':           {type:'dir', children:['WinX','Microsoft']},
+  'C:\\Temp':                    {type:'dir', children:[]},
+  'C:\\Users\\User\\Documents\\readme.txt': {type:'file', content:'Welcome to WinX OS!\r\nThis is the Windows (PowerShell) layer.\r\nBuilt with pure HTML, CSS & JS.'},
+  'C:\\Users\\User\\Documents\\notes.txt':  {type:'file', content:'My Notes\r\n--------\r\n[ ] Buy groceries\r\n[ ] Learn PowerShell\r\n[x] Deploy WinX to web'},
+};
+
+function buildWinTerminal(){
+  return `
+  <div style="display:flex;flex-direction:column;height:100%;background:#012456">
+    <div style="background:#003a75;border-bottom:1px solid #0054a6;padding:5px 10px;display:flex;align-items:center;gap:8px;flex-shrink:0">
+      <span style="color:#fff;font-size:1rem">🟦</span>
+      <span style="font-size:.65rem;color:#9dc8f5;font-family:'JetBrains Mono',monospace">Windows PowerShell</span>
+      <span style="margin-left:auto;font-size:.6rem;color:#4a90d9">WinX-PS 7.4.0</span>
+    </div>
+    <div id="pterm-body" onclick="document.getElementById('pterm-input').focus()"
+      style="flex:1;overflow-y:auto;padding:12px;font-family:'JetBrains Mono',monospace;font-size:.75rem;line-height:1.6;cursor:text">
+      <div style="color:#9dc8f5;margin-bottom:8px">
+        Windows PowerShell<br>
+        Copyright (C) WinX Corporation. All rights reserved.<br><br>
+        <span style="color:#ffff00">Install the latest PowerShell:</span> <span style="color:#4fc3f7">https://aka.ms/PSWindows</span>
+      </div>
+      <div id="pterm-output"></div>
+      <div style="display:flex;align-items:center;gap:0;margin-top:4px">
+        <span id="pterm-cwd" style="color:#ffff00;font-family:'JetBrains Mono',monospace;font-size:.75rem;white-space:nowrap">${psCwd}</span>
+        <span style="color:#fff;margin:0 4px">&gt;</span>
+        <input id="pterm-input" autocomplete="off" autocorrect="off" spellcheck="false"
+          style="background:transparent;border:none;outline:none;color:#fff;font-family:'JetBrains Mono',monospace;font-size:.75rem;flex:1;caret-color:#ffff00"
+          onkeydown="ptermKey(event)">
+      </div>
+    </div>
+  </div>`;
+}
+
+function ptermKey(e){
+  if(e.key==='Enter'){
+    const inp=document.getElementById('pterm-input');
+    const cmd=inp.value.trim(); inp.value='';
+    if(cmd){ psHistory.unshift(cmd); psHistIdx=-1; }
+    ptermExec(cmd);
+  } else if(e.key==='ArrowUp'){
+    psHistIdx=Math.min(psHistIdx+1,psHistory.length-1);
+    document.getElementById('pterm-input').value=psHistory[psHistIdx]||'';
+    e.preventDefault();
+  } else if(e.key==='ArrowDown'){
+    psHistIdx=Math.max(psHistIdx-1,-1);
+    document.getElementById('pterm-input').value=psHistIdx>=0?psHistory[psHistIdx]:'';
+    e.preventDefault();
+  }
+}
+
+function ptermPrint(html){
+  const out=document.getElementById('pterm-output'); if(!out) return;
+  out.innerHTML+=html;
+  const body=document.getElementById('pterm-body'); if(body) body.scrollTop=9999;
+}
+function pOut(t){ return `<div style="color:#e8e8e8;margin-bottom:2px;font-family:'JetBrains Mono',monospace;font-size:.75rem">${t}</div>`; }
+function pErr(t){ return `<div style="color:#ff6b6b;margin-bottom:2px;font-family:'JetBrains Mono',monospace;font-size:.75rem">${t}</div>`; }
+function pOk(t){ return `<div style="color:#6bff6b;margin-bottom:2px;font-family:'JetBrains Mono',monospace;font-size:.75rem">${t}</div>`; }
+function pPromptLine(cmd){ return `<div style="margin-bottom:2px;font-family:'JetBrains Mono',monospace;font-size:.75rem"><span style="color:#ffff00">${escHtml(psCwd)}</span><span style="color:#fff">&gt; </span><span style="color:#e8e8e8">${escHtml(cmd)}</span></div>`; }
+
+function pResolvePath(p){
+  p=p.trim();
+  if(/^[A-Za-z]:\\/.test(p)) return p.replace(/\\/g,'\\').replace(/\\$/,'');
+  if(p==='..'){
+    const parts=psCwd.split('\\');
+    return parts.length>1?parts.slice(0,-1).join('\\'):psCwd;
+  }
+  if(p==='.') return psCwd;
+  if(p.startsWith('.\\')) p=p.slice(2);
+  return psCwd+'\\'+p;
+}
+
+function ptermExec(cmd){
+  ptermPrint(pPromptLine(cmd||''));
+  if(!cmd) return;
+  // Normalize: split respecting aliases
+  const raw=cmd.trim();
+  const parts=raw.split(/\s+/);
+  const c=parts[0].toLowerCase(); const args=parts.slice(1);
+
+  // Alias map
+  const alias={'ls':'dir','dir':'dir','cd':'cd','pwd':'pwd','cat':'type','type':'type',
+    'echo':'echo','clear':'clear','cls':'clear','mkdir':'mkdir','md':'mkdir',
+    'rm':'remove-item','del':'remove-item','remove-item':'remove-item',
+    'cp':'copy-item','copy':'copy-item','copy-item':'copy-item',
+    'mv':'move-item','move':'move-item','move-item':'move-item',
+    'help':'help','get-help':'help','whoami':'whoami','hostname':'hostname',
+    'date':'get-date','get-date':'get-date','systeminfo':'systeminfo',
+    'tasklist':'tasklist','get-process':'tasklist','ipconfig':'ipconfig',
+    'write-host':'echo','write-output':'echo','get-childitem':'dir',
+    'set-location':'cd','get-location':'pwd','get-content':'type',
+    'new-item':'new-item','ni':'new-item','history':'history',
+    'winver':'winver','ver':'winver','open':'open','start':'open'
+  };
+  const resolved=alias[c]||c;
+
+  switch(resolved){
+    case 'help':
+      ptermPrint(pOut(`<span style="color:#ffff00">WinX PowerShell Commands:</span><br>
+  <span style="color:#4fc3f7">Navigation:</span>  dir (ls), cd, pwd (Get-Location)<br>
+  <span style="color:#4fc3f7">Files:</span>       type (cat), New-Item, mkdir, del (rm), copy, move<br>
+  <span style="color:#4fc3f7">System:</span>      whoami, hostname, systeminfo, tasklist, ipconfig<br>
+  <span style="color:#4fc3f7">Utils:</span>       echo, clear (cls), history, winver<br>
+  <span style="color:#4fc3f7">WinX:</span>        open &lt;appname&gt;<br>
+  <span style="color:#4fc3f7">Aliases:</span>     ls=dir, cat=type, rm=del, cls=clear, cd=Set-Location`));
+      break;
+    case 'dir':{
+      const target=args[0]?pResolvePath(args[0]):psCwd;
+      const node=WFS[target]||WFS[target+'\\'];
+      if(!node||node.type!=='dir'){ ptermPrint(pErr(`Get-ChildItem: Cannot find path '${escHtml(target)}' because it does not exist.`)); break; }
+      ptermPrint(pOut(`<br>&nbsp;&nbsp;&nbsp;Directory: <span style="color:#4fc3f7">${escHtml(target)}</span><br>`));
+      ptermPrint(pOut(`<span style="color:#4fc3f7">Mode&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; LastWriteTime&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Length Name</span>`));
+      ptermPrint(pOut(`---- ------------- ------ ----`));
+      (node.children||[]).forEach(name=>{
+        const cp=target+'\\'+name;
+        const ch=WFS[cp];
+        const isDir=ch&&ch.type==='dir';
+        const mode=isDir?'d-----':'------';
+        const size=isDir?'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;':String(ch?.content?.length||0).padStart(9);
+        const dt=new Date().toLocaleDateString('en-US',{month:'2-digit',day:'2-digit',year:'numeric'});
+        ptermPrint(pOut(`<span style="color:#ccc">${mode}</span>&nbsp;&nbsp;${dt}&nbsp;&nbsp;${size}&nbsp;&nbsp;<span style="color:${isDir?'#4fc3f7':'#e8e8e8'}">${name}</span>`));
+      });
+      ptermPrint(pOut(''));
+      break;
+    }
+    case 'cd':{
+      if(!args[0]){ ptermPrint(pOut(psCwd)); break; }
+      const to=args[0]==='~'||args[0]==='%USERPROFILE%'?'C:\\Users\\User':pResolvePath(args[0]);
+      if(WFS[to]&&WFS[to].type==='dir'){
+        psCwd=to;
+        const el=document.getElementById('pterm-cwd'); if(el) el.textContent=psCwd;
+      } else ptermPrint(pErr(`Set-Location: Cannot find path '${escHtml(to)}' because it does not exist.`));
+      break;
+    }
+    case 'pwd': ptermPrint(pOut(`<br>Path<br>----<br>${escHtml(psCwd)}<br>`)); break;
+    case 'type':{
+      if(!args[0]){ ptermPrint(pErr('Get-Content: Please provide a file path.')); break; }
+      const t=pResolvePath(args[0]); const n=WFS[t];
+      if(!n){ ptermPrint(pErr(`Get-Content: Cannot find path '${escHtml(t)}' because it does not exist.`)); break; }
+      if(n.type==='dir'){ ptermPrint(pErr(`Get-Content: The path '${escHtml(t)}' is a container, not an item.`)); break; }
+      ptermPrint(pOut(escHtml(n.content||'').replace(/\r\n/g,'<br>').replace(/\n/g,'<br>')));
+      break;
+    }
+    case 'echo': ptermPrint(pOut(escHtml(args.join(' ')))); break;
+    case 'clear': document.getElementById('pterm-output').innerHTML=''; break;
+    case 'mkdir':{
+      if(!args[0]){ ptermPrint(pErr('mkdir: Directory name is required.')); break; }
+      const t=pResolvePath(args[0]); const par=t.split('\\').slice(0,-1).join('\\'); const nm=t.split('\\').pop();
+      if(WFS[t]){ ptermPrint(pErr(`mkdir: An item with the specified name already exists.`)); break; }
+      if(!WFS[par]){ ptermPrint(pErr(`mkdir: Part of the path doesn't exist.`)); break; }
+      WFS[par].children.push(nm); WFS[t]={type:'dir',children:[]};
+      ptermPrint(pOut(`<br>&nbsp;&nbsp;&nbsp;Directory: <span style="color:#4fc3f7">${escHtml(par)}</span><br><span style="color:#4fc3f7">d-----</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;${nm}<br>`));
+      break;
+    }
+    case 'new-item':{
+      if(!args[0]){ ptermPrint(pErr('New-Item: Path is required.')); break; }
+      const t=pResolvePath(args[0]); const par=t.split('\\').slice(0,-1).join('\\'); const nm=t.split('\\').pop();
+      if(!WFS[t]){ WFS[par]&&WFS[par].children.push(nm); WFS[t]={type:'file',content:''}; }
+      ptermPrint(pOk(`Created: ${escHtml(t)}`));
+      break;
+    }
+    case 'remove-item':{
+      if(!args[0]){ ptermPrint(pErr('Remove-Item: Path is required.')); break; }
+      const t=pResolvePath(args[0]);
+      if(!WFS[t]){ ptermPrint(pErr(`Remove-Item: Cannot find path '${escHtml(t)}' because it does not exist.`)); break; }
+      const par=t.split('\\').slice(0,-1).join('\\'); const nm=t.split('\\').pop();
+      if(WFS[par]) WFS[par].children=WFS[par].children.filter(n=>n!==nm);
+      delete WFS[t]; ptermPrint(pOk(`Removed: ${escHtml(t)}`));
+      break;
+    }
+    case 'copy-item':{
+      if(args.length<2){ ptermPrint(pErr('Copy-Item: Destination is required.')); break; }
+      const src=pResolvePath(args[0]); const dst=pResolvePath(args[1]);
+      if(!WFS[src]){ ptermPrint(pErr(`Copy-Item: Cannot find '${escHtml(src)}'.`)); break; }
+      const par=dst.split('\\').slice(0,-1).join('\\'); const nm=dst.split('\\').pop();
+      WFS[dst]={...WFS[src]}; if(WFS[par]) WFS[par].children.push(nm);
+      ptermPrint(pOk(`Copied: ${escHtml(src)} → ${escHtml(dst)}`)); break;
+    }
+    case 'move-item':{
+      if(args.length<2){ ptermPrint(pErr('Move-Item: Destination is required.')); break; }
+      const src=pResolvePath(args[0]); const dst=pResolvePath(args[1]);
+      if(!WFS[src]){ ptermPrint(pErr(`Move-Item: Cannot find '${escHtml(src)}'.`)); break; }
+      const srcPar=src.split('\\').slice(0,-1).join('\\'); const srcNm=src.split('\\').pop();
+      const dstPar=dst.split('\\').slice(0,-1).join('\\'); const dstNm=dst.split('\\').pop();
+      WFS[dst]={...WFS[src]}; delete WFS[src];
+      if(WFS[srcPar]) WFS[srcPar].children=WFS[srcPar].children.filter(n=>n!==srcNm);
+      if(WFS[dstPar]) WFS[dstPar].children.push(dstNm);
+      ptermPrint(pOk(`Moved: ${escHtml(src)} → ${escHtml(dst)}`)); break;
+    }
+    case 'whoami': ptermPrint(pOut('winx\\user')); break;
+    case 'hostname': ptermPrint(pOut('WINX-PC')); break;
+    case 'winver':
+      ptermPrint(pOut(`<span style="color:#4fc3f7">WinX Version Information</span><br>
+Version:  WinX 11 (OS Build 26100.1) — Hybrid Edition<br>
+Kernel:   NT 10.0 / Linux 6.8.0-winx<br>
+Licensed to: User`));
+      break;
+    case 'systeminfo':
+      ptermPrint(pOut(`Host Name:                 WINX-PC<br>
+OS Name:                   WinX 11 Hybrid Edition<br>
+OS Version:                11.0.26100 Build 26100<br>
+OS Manufacturer:           WinX Corporation<br>
+System Type:               x64-based PC<br>
+Processor:                 Web Browser Engine<br>
+Total Physical Memory:     16,384 MB<br>
+Available Physical Memory: 14,336 MB<br>
+Page File Space:           8,192 MB`));
+      break;
+    case 'tasklist':
+      ptermPrint(pOut(`Image Name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;PID Session&nbsp;&nbsp;Mem Usage<br>
+========================= === ======= =========<br>
+winx-session.exe&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1 Console&nbsp;&nbsp;&nbsp;&nbsp;24,576 K<br>
+desktop-env.exe&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;42 Console&nbsp;&nbsp;&nbsp;&nbsp;86,000 K<br>
+winx-browser.exe&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;101 Console&nbsp;&nbsp;&nbsp;220,000 K<br>
+powershell.exe&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;512 Console&nbsp;&nbsp;&nbsp;&nbsp;48,000 K`));
+      break;
+    case 'ipconfig':
+      ptermPrint(pOut(`Windows IP Configuration<br><br>
+Ethernet adapter Local Area Connection:<br>
+&nbsp;&nbsp;IPv4 Address: 192.168.1.101<br>
+&nbsp;&nbsp;Subnet Mask: 255.255.255.0<br>
+&nbsp;&nbsp;Default Gateway: 192.168.1.1<br><br>
+DNS Servers: 8.8.8.8 / 8.8.4.4`));
+      break;
+    case 'history':
+      if(!psHistory.length){ ptermPrint(pOut('(no history)')); break; }
+      ptermPrint(pOut(psHistory.map((h,i)=>`${String(i+1).padStart(3,'&nbsp;')}  ${escHtml(h)}`).join('<br>')));
+      break;
+    case 'open': case 'start':{
+      const a=APPS.find(x=>x.id===args[0]||x.label.toLowerCase()===args.join(' ').toLowerCase());
+      if(a){ openApp(a.id); ptermPrint(pOk(`Starting ${a.label}...`)); }
+      else ptermPrint(pErr(`Start-Process: Cannot find application '${escHtml(args[0]||'')}'.`));
+      break;
+    }
+    case 'winget': ptermPrint(pOut(`<span style="color:#4fc3f7">WinGet Package Manager v1.7</span><br>Simulated in WinX web mode.`)); break;
+    case 'choco': ptermPrint(pOut(`<span style="color:#ffb347">Chocolatey v2.2</span><br>Simulated in WinX web mode.`)); break;
+    default:
+      ptermPrint(pErr(`'${escHtml(c)}' is not recognized as the name of a cmdlet, function, script file, or operable program.<br><span style="color:#ccc">Check the spelling of the name, or type <span style="color:#ffff00">help</span></span>`));
+  }
+}
+
+function resolvePath(p){ return lResolvePath(p); }
+
+// ── TEXT EDITOR ──
+function buildTextEditor(){
+  return `
+  <div class="editor-toolbar">
+    <button class="ed-btn" onclick="edNew()">New</button>
+    <button class="ed-btn" onclick="edSave()">Save</button>
+    <button class="ed-btn" onclick="edCopy()">Copy All</button>
+    <button class="ed-btn" onclick="edWrap()">Wrap</button>
+    <span style="margin-left:auto;font-size:.65rem;color:var(--text3)" id="ed-status">Ready</span>
+  </div>
+  <textarea class="editor-area" id="ed-textarea" placeholder="Start typing..." spellcheck="false"
+    oninput="edStatus()"></textarea>`;
+}
+function edNew(){ document.getElementById('ed-textarea').value=''; edSetStatus('New file'); }
+function edSave(){
+  const v=document.getElementById('ed-textarea').value;
+  const blob=new Blob([v],{type:'text/plain'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='untitled.txt'; a.click();
+  edSetStatus('Downloaded!');
+}
+function edCopy(){ navigator.clipboard.writeText(document.getElementById('ed-textarea').value||''); edSetStatus('Copied!'); }
+function edWrap(){
+  const ta=document.getElementById('ed-textarea');
+  ta.style.whiteSpace=ta.style.whiteSpace==='pre'?'pre-wrap':'pre';
+}
+function edStatus(){ const ta=document.getElementById('ed-textarea'); edSetStatus(`${ta.value.length} chars`); }
+function edSetStatus(s){ const el=document.getElementById('ed-status'); if(el) el.textContent=s; }
+
+// ── BROWSER ──
+function buildBrowser(){
+  return `
+  <div class="browser-toolbar">
+    <button class="fm-btn" id="bw-back">◀</button>
+    <button class="fm-btn" id="bw-fwd">▶</button>
+    <button class="fm-btn" id="bw-reload">↻</button>
+    <input class="browser-url" id="bw-url" placeholder="Search or enter URL..." onkeydown="if(event.key==='Enter')bwNav()">
+    <button class="fm-btn" onclick="bwNav()">Go</button>
+  </div>
+  <div id="bw-content" style="flex:1;overflow:hidden;display:flex;flex-direction:column">
+    ${buildBrowserHome()}
+  </div>`;
+}
+function buildBrowserHome(){
+  return `<div class="browser-home">
+    <div style="font-size:.65rem;color:var(--text3);text-transform:uppercase;letter-spacing:.1em">WinX Browser</div>
+    <h2>Good ${getGreeting()}, User</h2>
+    <input class="browser-home-search" placeholder="🔍 Search the web..." onkeydown="if(event.key==='Enter'){document.getElementById('bw-url').value=this.value;bwNav()}">
+    <div class="browser-shortcuts">
+      <div class="bm-item" onclick="bwLoad('https://google.com')"><div class="bm-ico">🔍</div>Google</div>
+      <div class="bm-item" onclick="bwLoad('https://github.com')"><div class="bm-ico">🐙</div>GitHub</div>
+      <div class="bm-item" onclick="bwLoad('https://wikipedia.org')"><div class="bm-ico">📖</div>Wikipedia</div>
+      <div class="bm-item" onclick="bwLoad('https://youtube.com')"><div class="bm-ico">▶️</div>YouTube</div>
+    </div>
+  </div>`;
+}
+function getGreeting(){ const h=new Date().getHours(); return h<12?'morning':h<17?'afternoon':'evening'; }
+function bwNav(){
+  let url=document.getElementById('bw-url').value.trim();
+  if(!url) return;
+  if(!url.startsWith('http')) url='https://'+url;
+  bwLoad(url);
+}
+function bwLoad(url){
+  document.getElementById('bw-url').value=url;
+  const c=document.getElementById('bw-content');
+  if(!c) return;
+  c.innerHTML=`<div style="flex:1;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:12px;color:var(--text2);font-size:.8rem;background:var(--bg)">
+    <div class="spinner"></div>
+    <div>Loading: ${url}</div>
+    <div style="font-size:.65rem;color:var(--text3)">Note: External sites require popup permissions</div>
+    <button class="fm-btn" onclick="window.open('${url}','_blank')">Open in New Tab ↗</button>
+  </div>`;
+}
+
+// ── SETTINGS ──
+function buildSettings(){
+  return `<div class="settings-layout">
+    <div class="settings-nav">
+      <div class="settings-nav-item active" onclick="settingsTab('appearance',this)">🎨 Appearance</div>
+      <div class="settings-nav-item" onclick="settingsTab('system',this)">⚙️ System</div>
+      <div class="settings-nav-item" onclick="settingsTab('network',this)">📶 Network</div>
+      <div class="settings-nav-item" onclick="settingsTab('display',this)">🖥️ Display</div>
+      <div class="settings-nav-item" onclick="settingsTab('about',this)">ℹ️ About</div>
+    </div>
+    <div class="settings-content" id="settings-content">
+      ${settingsAppearance()}
+    </div>
+  </div>`;
+}
+function settingsTab(tab, el){
+  document.querySelectorAll('.settings-nav-item').forEach(e=>e.classList.remove('active'));
+  el.classList.add('active');
+  const map = {appearance:settingsAppearance,system:settingsSystem,network:settingsNetwork,display:settingsDisplay,about:settingsAboutPage};
+  document.getElementById('settings-content').innerHTML=(map[tab]||settingsAppearance)();
+}
+function settingsAppearance(){
+  return `<div class="settings-section"><h3>Theme</h3>
+    <div class="settings-row"><span class="settings-label">Dark Mode</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+    <div class="settings-row"><span class="settings-label">Accent Color</span>
+      <div class="color-swatches">
+        <div class="swatch active" style="background:#e95420" onclick="setAccent('#e95420',this)"></div>
+        <div class="swatch" style="background:#0078d4" onclick="setAccent('#0078d4',this)"></div>
+        <div class="swatch" style="background:#77dd77" onclick="setAccent('#77dd77',this)"></div>
+        <div class="swatch" style="background:#ff6ab0" onclick="setAccent('#ff6ab0',this)"></div>
+        <div class="swatch" style="background:#ffd700" onclick="setAccent('#ffd700',this)"></div>
+      </div>
+    </div>
+    <div class="settings-row"><span class="settings-label">Font Size</span>
+      <select class="settings-select" onchange="document.documentElement.style.fontSize=this.value">
+        <option value="14px">14px (Default)</option><option value="12px">12px (Small)</option><option value="16px">16px (Large)</option>
+      </select>
+    </div>
+  </div>
+  <div class="settings-section"><h3>Taskbar</h3>
+    <div class="settings-row"><span class="settings-label">Show Clock</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+    <div class="settings-row"><span class="settings-label">Auto-hide Taskbar</span><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+  </div>`;
+}
+function settingsSystem(){
+  return `<div class="settings-section"><h3>System</h3>
+    <div class="settings-row"><span class="settings-label">Animations</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+    <div class="settings-row"><span class="settings-label">Notifications</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+    <div class="settings-row"><span class="settings-label">Language</span>
+      <select class="settings-select"><option>English (US)</option><option>Español</option><option>Français</option><option>日本語</option></select>
+    </div>
+  </div>`;
+}
+function settingsNetwork(){
+  return `<div class="settings-section"><h3>Network</h3>
+    <div class="settings-row"><span class="settings-label">Wi-Fi</span><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+    <div class="settings-row"><span class="settings-label">Bluetooth</span><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+    <div style="margin-top:8px;padding:10px;background:var(--surface2);border-radius:6px;font-size:.72rem;color:var(--text2)">📶 Connected to: <span style="color:var(--text)">WinX_Network</span></div>
+  </div>`;
+}
+function settingsDisplay(){
+  return `<div class="settings-section"><h3>Display</h3>
+    <div class="settings-row"><span class="settings-label">Resolution</span>
+      <select class="settings-select"><option>1920×1080</option><option>1440×900</option><option>2560×1440</option></select>
+    </div>
+    <div class="settings-row"><span class="settings-label">Refresh Rate</span>
+      <select class="settings-select"><option>60 Hz</option><option>120 Hz</option><option>144 Hz</option></select>
+    </div>
+    <div class="settings-row"><span class="settings-label">Night Light</span><div class="toggle" onclick="this.classList.toggle('on')"></div></div>
+  </div>`;
+}
+function settingsAboutPage(){
+  return `<div class="settings-section"><h3>About WinX</h3>
+    <div style="font-size:.75rem;color:var(--text2);line-height:2">
+      <div><span style="color:var(--text)">OS:</span> WinX 1.0.0</div>
+      <div><span style="color:var(--text)">Kernel:</span> 6.8.0-winx-hybrid</div>
+      <div><span style="color:var(--text)">Build:</span> ${new Date().toISOString().split('T')[0]}</div>
+      <div><span style="color:var(--text)">Architecture:</span> x86_64</div>
+      <div><span style="color:var(--text)">Based on:</span> Ubuntu + Windows NT</div>
+    </div>
+  </div>`;
+}
+function setAccent(color, el){
+  document.documentElement.style.setProperty('--accent',color);
+  document.querySelectorAll('.swatch').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  showNotif('Settings','Accent color updated','🎨');
+}
+
+// ── CALCULATOR ──
+function buildCalculator(){
+  const btns=[
+    {l:'C',c:'cb-clear',a:"calcClear()"},
+    {l:'±',c:'cb-func',a:"calcSign()"},
+    {l:'%',c:'cb-func',a:"calcPct()"},
+    {l:'÷',c:'cb-op',a:"calcOp('/')"},
+    {l:'7',c:'cb-num',a:"calcNum('7')"},
+    {l:'8',c:'cb-num',a:"calcNum('8')"},
+    {l:'9',c:'cb-num',a:"calcNum('9')"},
+    {l:'×',c:'cb-op',a:"calcOp('*')"},
+    {l:'4',c:'cb-num',a:"calcNum('4')"},
+    {l:'5',c:'cb-num',a:"calcNum('5')"},
+    {l:'6',c:'cb-num',a:"calcNum('6')"},
+    {l:'−',c:'cb-op',a:"calcOp('-')"},
+    {l:'1',c:'cb-num',a:"calcNum('1')"},
+    {l:'2',c:'cb-num',a:"calcNum('2')"},
+    {l:'3',c:'cb-num',a:"calcNum('3')"},
+    {l:'+',c:'cb-op',a:"calcOp('+')"},
+    {l:'0',c:'cb-num cb-span2',a:"calcNum('0')"},
+    {l:'.',c:'cb-num',a:"calcDot()"},
+    {l:'=',c:'cb-eq',a:"calcEq()"},
+  ];
+  return `<div class="calc-body">
+    <div class="calc-display">
+      <div class="calc-expr" id="calc-expr"></div>
+      <div class="calc-val" id="calc-val">0</div>
+    </div>
+    <div class="calc-grid">
+      ${btns.map(b=>`<button class="calc-btn ${b.c}" onclick="${b.a}">${b.l}</button>`).join('')}
+    </div>
+  </div>`;
+}
+function calcRender(){
+  const v=document.getElementById('calc-val');
+  const e=document.getElementById('calc-expr');
+  if(v) v.textContent=calcState.val;
+  if(e) e.textContent=calcState.expr;
+}
+function calcNum(n){
+  if(calcState.fresh){ calcState.val=n; calcState.fresh=false; }
+  else calcState.val=calcState.val==='0'?n:calcState.val+n;
+  calcRender();
+}
+function calcDot(){
+  if(!calcState.val.includes('.')){ calcState.val+='.'; calcRender(); }
+}
+function calcOp(op){
+  calcState.prev=parseFloat(calcState.val);
+  calcState.op=op;
+  calcState.expr=`${calcState.val} ${op}`;
+  calcState.fresh=true;
+  calcRender();
+}
+function calcEq(){
+  if(calcState.op===null) return;
+  const a=calcState.prev, b=parseFloat(calcState.val);
+  let r;
+  switch(calcState.op){
+    case '+': r=a+b; break; case '-': r=a-b; break;
+    case '*': r=a*b; break; case '/': r=b===0?'Error':a/b; break;
+  }
+  calcState.expr=`${a} ${calcState.op} ${b} =`;
+  calcState.val=String(typeof r==='number'?parseFloat(r.toFixed(10)):r);
+  calcState.op=null; calcState.fresh=true;
+  calcRender();
+}
+function calcClear(){ calcState={val:'0',expr:'',op:null,prev:null,fresh:true}; calcRender(); }
+function calcSign(){ calcState.val=String(parseFloat(calcState.val)*-1); calcRender(); }
+function calcPct(){ calcState.val=String(parseFloat(calcState.val)/100); calcRender(); }
+
+// ── TASK MANAGER ──
+const PROCS=[
+  {name:'winx-session',pid:1,cpu:0.2,mem:24,status:'running'},
+  {name:'desktop-env',pid:42,cpu:1.1,mem:86,status:'running'},
+  {name:'winx-browser',pid:101,cpu:3.4,mem:220,status:'running'},
+  {name:'file-manager',pid:203,cpu:0.5,mem:48,status:'running'},
+  {name:'system-daemon',pid:8,cpu:0.1,mem:12,status:'running'},
+  {name:'network-mgr',pid:77,cpu:0.3,mem:32,status:'running'},
+  {name:'audio-server',pid:93,cpu:0.8,mem:56,status:'running'},
+  {name:'update-checker',pid:315,cpu:0.0,mem:18,status:'sleeping'},
+];
+let tmInterval;
+function buildTaskManager(){
+  return `<div class="taskmgr-header">
+    <div class="taskmgr-stat"><span id="tm-cpu">CPU: 0%</span><span>Usage</span></div>
+    <div class="taskmgr-stat"><span id="tm-mem">MEM: 0MB</span><span>Used</span></div>
+    <div class="taskmgr-stat"><span id="tm-procs">Processes: 0</span><span>Total</span></div>
+  </div>
+  <div class="proc-table">
+    <div class="proc-header"><span>Process</span><span>CPU</span><span>Memory</span><span>Status</span></div>
+    <div id="tm-rows"></div>
+  </div>`;
+}
+function tmInit(){
+  tmRender();
+  tmInterval=setInterval(tmRender,1500);
+  const win=document.getElementById('win-task-manager');
+  if(win) win.addEventListener('remove',()=>clearInterval(tmInterval));
+}
+function tmRender(){
+  const rows=document.getElementById('tm-rows');
+  if(!rows){ clearInterval(tmInterval); return; }
+  let totalCpu=0, totalMem=0;
+  rows.innerHTML=PROCS.map(p=>{
+    const cpu=(p.cpu+((Math.random()-.4)*.8)).toFixed(1);
+    const mem=Math.max(8,Math.floor(p.mem+(Math.random()-.5)*10));
+    const cpuN=Math.min(100,parseFloat(cpu));
+    totalCpu+=cpuN; totalMem+=mem;
+    const col=cpuN>10?'#f85149':cpuN>5?'#e6b800':'var(--accent3)';
+    return `<div class="proc-row">
+      <div><div>${p.name}</div><div style="font-size:.6rem;color:var(--text3)">PID: ${p.pid}</div></div>
+      <div><div style="font-size:.65rem">${cpu}%</div><div class="proc-bar"><div class="proc-fill" style="width:${cpuN}%;background:${col}"></div></div></div>
+      <div style="font-size:.7rem">${mem} MB</div>
+      <div style="font-size:.65rem;color:${p.status==='running'?'var(--accent3)':'var(--text3)'}">${p.status}</div>
+    </div>`;
+  }).join('');
+  document.getElementById('tm-cpu').textContent=`CPU: ${Math.min(100,totalCpu).toFixed(1)}%`;
+  document.getElementById('tm-mem').textContent=`MEM: ${totalMem}MB`;
+  document.getElementById('tm-procs').textContent=`Processes: ${PROCS.length}`;
+}
+
+// ── ABOUT ──
+function buildAbout(){
+  return `<div class="about-body">
+    <div class="about-logo"><span class="o">Win</span><span class="w">X</span></div>
+    <div class="about-version">Version 1.0.0 — Hybrid Edition</div>
+    <div class="about-desc">A web-based OS blending Ubuntu's power with Windows' familiarity. Built entirely in HTML, CSS & JavaScript.</div>
+    <div class="about-specs">
+      OS:           WinX 1.0.0<br>
+      Kernel:       6.8.0-winx-hybrid<br>
+      Shell:        winxsh 2.1<br>
+      Desktop:      WinX Desktop<br>
+      Architecture: x86_64<br>
+      Build Date:   ${new Date().toLocaleDateString()}<br>
+      Engine:       Chromium / WebKit<br>
+      License:      Open Source
+    </div>
+    <button class="fm-btn" style="padding:8px 20px" onclick="showNotif('WinX','Checking for updates...','🔄')">Check for Updates</button>
+  </div>`;
+}
+
+// ══════════════════════════════════════════
+//  SHUT DOWN
+// ══════════════════════════════════════════
+function shutDown(){
+  const boot=document.getElementById('boot');
+  boot.style.opacity='0';
+  boot.style.display='flex';
+  boot.style.transition='opacity .5s';
+  setTimeout(()=>{
+    boot.style.opacity='1';
+    document.getElementById('boot-txt').textContent='Shutting down WinX...';
+    document.getElementById('boot-fill').style.width='100%';
+    document.querySelector('.boot-logo').innerHTML='<span class="o" style="color:#555">Win</span><span class="w" style="color:#555">X</span>';
+  },50);
+}
+
+// ══════════════════════════════════════════
+//  TASK MANAGER CLEANUP
+// ══════════════════════════════════════════
+const origClose = closeWin;
+window.closeWin = function(id){
+  if(id==='task-manager'&&tmInterval) clearInterval(tmInterval);
+  origClose(id);
+};
+
+// ══════════════════════════════════════════
+//  KEYBOARD SHORTCUTS
+// ══════════════════════════════════════════
+document.addEventListener('keydown', e=>{
+  if(e.ctrlKey && e.altKey){
+    if(e.key==='t'){ openApp('linux-terminal'); e.preventDefault(); }
+    if(e.key==='p'){ openApp('win-terminal'); e.preventDefault(); }
+    if(e.key==='f'){ openApp('file-manager'); e.preventDefault(); }
+    if(e.key==='e'){ openApp('text-editor'); e.preventDefault(); }
+  }
+  if(e.key==='Escape'){ closeStartMenu(); closeCtx(); }
+});
+
+</script>
+</body>
+</html>
