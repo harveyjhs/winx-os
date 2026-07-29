@@ -8,6 +8,12 @@ WinX OS is a web-based operating system concept that combines the familiar inter
 
 This project recreates an OS-like experience using pure HTML, CSS, and JavaScript. It runs directly in a web browser without requiring any installation.
 
+## Live Demo
+
+Try WinX OS here:
+
+https://harveyjhs.github.io/winx-os
+
 ## Features
 
 - 🖥️ Windows-inspired desktop environment
@@ -50,16 +56,29 @@ This project recreates an OS-like experience using pure HTML, CSS, and JavaScrip
 ## How to Run
 
 1. Download or clone this repository
-2. Open `index.html`
+2. Open **`index.html`**
 3. WinX OS will run directly in your browser
+
+**The main operating system interface is located in `index.html`.**
 
 No installation required.
 
 ## Project Goals
 
-WinX OS was created as an experiment to create an operating system-like interface using web technologies.
+WinX OS was created as an experiment to design an operating system-like interface using web technologies.
 
 The goal is to combine the simplicity of Windows with the flexibility and customization ideas from Linux.
+
+## AI Assistance
+
+This project was developed with the assistance of Claude AI for brainstorming, problem-solving, debugging, and improving the development workflow.
+
+## Author
+
+Created by **Harvey Jeremy**
+
+GitHub:
+https://github.com/harveyjhs
 
 ## Future Improvements
 
