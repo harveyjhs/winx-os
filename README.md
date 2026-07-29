@@ -71,7 +71,11 @@ The goal is to combine the simplicity of Windows with the flexibility and custom
 
 ## AI Assistance
 
-This project was developed with the assistance of Claude AI for brainstorming, problem-solving, debugging, and improving the development workflow.
+A significant portion of the coding and development process was done with the assistance of Claude AI.
+
+Claude AI was used to help generate code, solve programming problems, debug issues, and improve the overall development process.
+
+The project was designed, reviewed, and managed by **Harvey Jeremy**.
 
 ## Author
 
